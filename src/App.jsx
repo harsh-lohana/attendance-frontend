@@ -2,7 +2,8 @@ import LandingPage from "./pages/LandingPage";
 import { Routes, Route } from "react-router";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
-import StudentAttendanceDashboard from "./pages/StudentAttendanceDashboard"
+import StudentDashboard from "./pages/StudentDashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
 import { Toaster } from "react-hot-toast";
 import { useState } from "react";
 
@@ -14,7 +15,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dashboard" element={<StudentAttendanceDashboard />} />
+        <Route path="/student-dashboard" element={<StudentDashboard />} />
+        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
       </Routes>
     </main>
   )

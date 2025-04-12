@@ -67,7 +67,7 @@ const SignupPage = () => {
         toast.success("Signed in!");
         localStorage.setItem("userInfo", JSON.stringify(data));
         setLoading(false);
-        navigate("/dashboard");
+        navigate("/student-dashboard");
       } catch (error) {
         setError(error.response.data.message);
         toast.error("Invalid email or password!");
@@ -97,7 +97,7 @@ const SignupPage = () => {
         toast.success("Signed in!");
         localStorage.setItem("userInfo", JSON.stringify(data));
         setLoading(false);
-        navigate("/dashboard");
+        navigate("/teacher-dashboard");
       } catch (error) {
         setError(error.response.data.message);
         toast.error("Invalid email or password!");
