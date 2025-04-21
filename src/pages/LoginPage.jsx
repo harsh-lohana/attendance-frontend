@@ -52,7 +52,6 @@ const LoginPage = () => {
           "Content-type": "application/json",
         },
       };
-      console.log(studentID, password);
       setLoading(true);
       const { data } = await axios.post(
         "http://localhost:8000/api/teacher/login",
