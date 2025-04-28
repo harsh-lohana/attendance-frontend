@@ -62,6 +62,9 @@ const TeacherDashboard = () => {
 
   useEffect(() => {
     getClassrooms();
+    if(classrooms) {
+
+    }
   }, []);
 
   const openModal = (classroom = null) => {
@@ -86,12 +89,13 @@ const TeacherDashboard = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setCurrentClassroom(null);
+    window.location.reload();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const newSubjectName = "B" + (["CSE", "CE", "IT", "ETC", "EEE"].indexOf(branch) + 1) + (25 - year) + ": " + subjectName;
+      const newSubjectName = "B" + (["CSE", "ETC", "EEE", "IT", "CE"].indexOf(branch) + 1) + (25 - year) + ": " + subjectName;
       const item = localStorage.getItem("userInfo");
       const userInfo = JSON.parse(item);
       setLoading(true);
@@ -154,9 +158,7 @@ const TeacherDashboard = () => {
   };
 
   const filteredClassrooms = classrooms.filter(classroom =>
-    classroom.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    classroom.branch.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    classroom.year.toLowerCase().includes(searchTerm.toLowerCase())
+    classroom.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -191,13 +193,11 @@ const TeacherDashboard = () => {
           </div>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-md">
           <div className="p-6">
             <h2 className="text-xl font-semibold mb-4">Your Classrooms</h2>
-
             {filteredClassrooms.length === 0 ? (
               <div className="text-center py-10">
                 <p className="text-gray-600 mb-4">No classrooms found.</p>
@@ -211,42 +211,43 @@ const TeacherDashboard = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="bg-white divide-y divide-gray-200">
-                  {filteredClassrooms.map((classroom) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+                  {filteredClassrooms.map((classroom, index) => (
                     <div
-                      key={classroom.id}
-                      className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                    // onClick={() => viewClassroomDetails(classroom)}
+                      key={index}
+                      className="border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 bg-white flex flex-col h-full"
+                      onClick={() => viewClassroomDetails(classroom)}
                     >
                       <div className="bg-indigo-50 p-4 border-b">
-                        <h3 className="font-medium text-lg">{classroom.subject}</h3>
+                        <h3 className="font-medium text-lg truncate">{classroom.subject}</h3>
                       </div>
-                      <div className="p-4">
+                      <div className="p-4 flex-grow">
                         <div className="flex items-center mb-2 text-sm text-gray-600">
-                          <Book size={16} className="mr-2" />
-                          <span>{classroom.teacher}</span>
+                          <Book size={16} className="mr-2 flex-shrink-0" />
+                          <span className="truncate">{classroom.teacher.name}</span>
                         </div>
                         <div className="flex items-center mb-2 text-sm text-gray-600">
-                          <span>{classroom.branch}</span>
+                          <span className="truncate">{classroom.branch}</span>
                         </div>
                         <div className="flex items-center mb-2 text-sm text-gray-600">
-                          <span>{classroom.year}</span>
+                          <span className="truncate">{classroom.year}</span>
                         </div>
                       </div>
                       <div className="bg-gray-50 px-4 py-3 border-t flex justify-between items-center">
                         <div className="text-sm text-gray-500 flex items-center">
-                          <Users size={14} className="mr-1" />
+                          <Users size={14} className="mr-1 flex-shrink-0" />
                           <span>{classroom.students.length} students</span>
                         </div>
                         <button
-                          className="text-indigo-600 text-sm font-medium flex items-center"
+                          className="text-indigo-600 text-sm font-medium flex items-center hover:text-indigo-800 transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
-                            viewClassroomDetails(classroom);
+                            navigate(`/classroom/${classroom._id}`)
+                            // viewClassroomDetails(classroom);
                           }}
                         >
                           View Details
-                          <ArrowRight size={14} className="ml-1" />
+                          <ArrowRight size={14} className="ml-1 flex-shrink-0" />
                         </button>
                       </div>
                     </div>
@@ -260,7 +261,7 @@ const TeacherDashboard = () => {
 
       {/* Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black opacity-95 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
             <div className="flex justify-between items-center px-6 py-4 border-b">
               <h3 className="text-lg font-medium">
