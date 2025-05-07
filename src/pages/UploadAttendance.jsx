@@ -22,7 +22,6 @@ export default function UploadAttendance() {
                     "Content-type": "multipart/form-data",
                 },
             };
-            console.log(formData);
             setLoading(true);
             const { data } = await axios.post(
                 "http://localhost:8000/api/attendance/create",

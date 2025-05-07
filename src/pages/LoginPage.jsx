@@ -24,14 +24,12 @@ const LoginPage = () => {
           "Content-type": "application/json",
         },
       };
-      console.log(studentID, password);
       setLoading(true);
       const { data } = await axios.post(
         "http://localhost:8000/api/student/login",
         { studentID, password },
         config
       );
-      console.log(data)
       toast.success("Logged in!");
       localStorage.setItem("userInfo", JSON.stringify(data));
       setLoading(false);
@@ -58,7 +56,6 @@ const LoginPage = () => {
         { email, password },
         config
       );
-      console.log(data)
       toast.success("Logged in!");
       localStorage.setItem("userInfo", JSON.stringify(data));
       setLoading(false);

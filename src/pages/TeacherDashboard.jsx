@@ -46,12 +46,10 @@ const TeacherDashboard = () => {
           "Content-type": "application/json",
         },
       };
-      console.log({ teacherID: userInfo._id })
       const { data } = await axios.get(
         `http://localhost:8000/api/classroom/teacher?teacherID=${userInfo._id}`,
         config
       );
-      console.log(data)
       setClassrooms(data);
     } catch (error) {
       toast.error("Something went wrong!");
@@ -104,7 +102,6 @@ const TeacherDashboard = () => {
           "Content-type": "application/json",
         },
       };
-      console.log({ subject: newSubjectName, teacher: userInfo._id })
       const { data } = await axios.post(
         "http://localhost:8000/api/classroom/create",
         { subject: newSubjectName, teacherID: userInfo._id },

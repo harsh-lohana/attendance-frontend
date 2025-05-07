@@ -1,39 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Book, Clock, Users, Search, ArrowRight, BookOpen } from 'lucide-react';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useNavigate } from 'react-router';
 
 const StudentDashboard = () => {
   const [myClassrooms, setMyClassrooms] = useState([]);
   const [availableClassrooms, setAvailableClassrooms] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('my-classrooms');
   const [selectedClassroom, setSelectedClassroom] = useState(null);
   const [showClassroomDetails, setShowClassroomDetails] = useState(false);
+  const navigate = useNavigate();
 
-  // Initialize with sample data
+  const getClassrooms = async () => {
+    let studentClassrooms, availableStudentClassrooms;
+    try {
+      setLoading(true);
+      const item = localStorage.getItem("userInfo");
+      const userInfo = JSON.parse(item);
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+      const { data } = await axios.get(
+        `http://localhost:8000/api/classroom/student?studentID=${userInfo._id}`,
+        config
+      );
+      studentClassrooms = data;
+      setMyClassrooms(data);
+    } catch (error) {
+      toast.error("Something went wrong!");
+      setLoading(false);
+      console.log(error.message);
+    }
+    try {
+      setLoading(true);
+      const item = localStorage.getItem("userInfo");
+      const userInfo = JSON.parse(item);
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+      const { data } = await axios.get(
+        `http://localhost:8000/api/classroom/student/available?studentID=${userInfo._id}`,
+        config
+      );
+      availableStudentClassrooms = data;
+      const filteredAvailableClassrooms = availableStudentClassrooms.filter(classroom => studentClassrooms.includes(classroom));
+      setAvailableClassrooms(filteredAvailableClassrooms);
+    } catch (error) {
+      toast.error("Something went wrong!");
+      setLoading(false);
+      console.log(error.message);
+    } 
+  }
+
   useEffect(() => {
-    // Classrooms the student is already enrolled in
-    const enrolledClassrooms = []
-
-    // Available classrooms to join
-    const joinableClassrooms = []
-
-    setMyClassrooms(enrolledClassrooms);
-    setAvailableClassrooms(joinableClassrooms);
+    getClassrooms();
   }, []);
 
-  const joinClassroom = (classroomId) => {
-    const classroomToJoin = availableClassrooms.find(c => c.id === classroomId);
-    if (classroomToJoin) {
-      // Add classroom to enrolled list with empty assignments and announcements
-      const updatedClassroom = {
-        ...classroomToJoin,
-        enrolled: true,
-        announcements: [],
-        upcomingAssignments: []
+  const joinClassroom = async (classroomID) => {
+    try {
+      setLoading(true);
+      const item = localStorage.getItem("userInfo");
+      const userInfo = JSON.parse(item);
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        }
       };
-
-      setMyClassrooms([...myClassrooms, updatedClassroom]);
-      setAvailableClassrooms(availableClassrooms.filter(c => c.id !== classroomId));
+      const { data } = await axios.post(
+        `http://localhost:8000/api/classroom/join`,
+        { studentID: userInfo._id, classroomID: classroomID },
+        config
+      );
+    } catch (error) {
+      toast.error("Something went wrong!");
+      setLoading(false);
+      console.log(error.message);
     }
   };
 
@@ -50,7 +98,7 @@ const StudentDashboard = () => {
   // Filter classrooms based on search term
   const filterClassrooms = (classrooms) => {
     return classrooms.filter(classroom =>
-      classroom.name.toLowerCase().includes(searchTerm.toLowerCase())
+      classroom.subject.toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
 
@@ -90,8 +138,8 @@ const StudentDashboard = () => {
               <div className="flex">
                 <button
                   className={`px-6 py-3 text-sm font-medium ${activeTab === 'my-classrooms'
-                      ? 'border-b-2 border-indigo-500 text-indigo-600'
-                      : 'text-gray-500 hover:text-gray-700'
+                    ? 'border-b-2 border-indigo-500 text-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700'
                     }`}
                   onClick={() => setActiveTab('my-classrooms')}
                 >
@@ -99,8 +147,8 @@ const StudentDashboard = () => {
                 </button>
                 <button
                   className={`px-6 py-3 text-sm font-medium ${activeTab === 'join-classrooms'
-                      ? 'border-b-2 border-indigo-500 text-indigo-600'
-                      : 'text-gray-500 hover:text-gray-700'
+                    ? 'border-b-2 border-indigo-500 text-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700'
                     }`}
                   onClick={() => setActiveTab('join-classrooms')}
                 >
@@ -138,7 +186,7 @@ const StudentDashboard = () => {
                           <div className="p-4 flex-grow">
                             <div className="flex items-center mb-2 text-sm text-gray-600">
                               <Book size={16} className="mr-2 flex-shrink-0" />
-                              <span className="truncate">{classroom.teacher}</span>
+                              <span className="truncate">{classroom.teacher.name}</span>
                             </div>
                             <div className="flex items-center mb-2 text-sm text-gray-600">
                               <span className="truncate">{classroom.branch}</span>
@@ -152,7 +200,8 @@ const StudentDashboard = () => {
                               className="text-indigo-600 text-sm font-medium flex items-center hover:text-indigo-800 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                viewClassroomDetails(classroom);
+                                navigate(`/classroom/${classroom._id}`)
+                                // viewClassroomDetails(classroom);
                               }}
                             >
                               View Details
@@ -179,35 +228,34 @@ const StudentDashboard = () => {
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classroom</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {filteredAvailableClassrooms.map((classroom) => (
-                            <tr key={classroom.id} className="hover:bg-gray-50">
+                          {filteredAvailableClassrooms.map((classroom, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div>
-                                  <div className="text-sm font-medium text-gray-900">{classroom.name}</div>
-                                  <div className="text-sm text-gray-500">{classroom.subject} | {classroom.grade}</div>
+                                  <div className="text-sm font-medium text-gray-900">{classroom.subject}</div>
+                                  <div className="text-sm text-gray-500">{classroom.subject}</div>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{classroom.teacher}</div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="text-sm text-gray-900 max-w-xs truncate">{classroom.schedule}</div>
+                                <div className="text-sm text-gray-900">{classroom.teacher.name}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center text-sm text-gray-900">
                                   <Users size={16} className="mr-2 text-gray-400" />
-                                  {classroom.studentCount} students
+                                  {classroom.students.length} students
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button
-                                  onClick={() => joinClassroom(classroom.id)}
+                                  onClick={() => {
+                                    joinClassroom(classroom._id);
+                                    window.location.reload();
+                                  }}
                                   className="inline-flex items-center px-3 py-1 border border-indigo-600 text-indigo-600 rounded hover:bg-blue-50"
                                 >
                                   Join Class
@@ -249,13 +297,6 @@ const StudentDashboard = () => {
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="font-medium text-gray-800 mb-2 flex items-center">
-                    <Clock size={18} className="mr-2 text-indigo-500" />
-                    Schedule
-                  </h3>
-                  <p className="text-gray-700">{selectedClassroom.schedule}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-gray-800 mb-2 flex items-center">
                     <Users size={18} className="mr-2 text-indigo-500" />
                     Students
                   </h3>
@@ -281,8 +322,8 @@ const StudentDashboard = () => {
                           <div className="flex justify-between">
                             <h4 className="font-medium">{assignment.title}</h4>
                             <span className={`text-sm px-2 py-1 rounded ${assignment.status === 'completed'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
                               }`}>
                               {assignment.status === 'completed' ? 'Completed' : 'Pending'}
                             </span>
