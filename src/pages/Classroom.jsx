@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, List, Filter, Download, ArrowLeft, User, Clock, Check, X, AlertTriangle, Upload } from 'lucide-react';
 import { format, parseISO, isToday, isYesterday, startOfMonth, endOfMonth, isSameDay } from 'date-fns';
 import { useParams } from "react-router";
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useNavigate } from 'react-router';
 
 const Classroom = ({ onBack }) => {
     // State for attendance data
@@ -9,7 +12,7 @@ const Classroom = ({ onBack }) => {
     const [attendanceRecords, setAttendanceRecords] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [uploadFile, setUploadFile] = useState(null);
+    const [video, setVideo] = useState(null);
     const [uploadStatus, setUploadStatus] = useState(null);
 
     // State for filters
@@ -20,6 +23,8 @@ const Classroom = ({ onBack }) => {
 
     const params = useParams();
     const id = params.id;
+
+    const navigate = useNavigate();
 
     // Fetch attendance data for this classroom
     useEffect(() => {
@@ -149,31 +154,31 @@ const Classroom = ({ onBack }) => {
         return groups;
     }, {});
 
-    // Handle file upload
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setUploadFile(e.target.files[0]);
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        try {
+            const formData = new FormData();
+            formData.append("classroomID", "68067441c37337e5a3eeb8c6");
+            formData.append("video", video)
+            const config = {
+                headers: {
+                    "Content-type": "multipart/form-data",
+                },
+            };
+            setLoading(true);
+            const { data } = await axios.post(
+                "http://localhost:8000/api/attendance/create",
+                formData,
+                config
+            );
+            toast.success("Uploaded!");
+            setLoading(false);
+            navigate("/teacher-dashboard");
+        } catch (error) {
+            toast.error("Something went wrong!");
+            setLoading(false);
+            console.log(error.message);
         }
-    };
-
-    const handleUpload = async () => {
-        if (!uploadFile) {
-            setUploadStatus({ success: false, message: 'Please select a file first.' });
-            return;
-        }
-
-        setUploadStatus({ loading: true, message: 'Uploading attendance data...' });
-
-        // In a real application, you would send the file to your server here
-        // For this demo, we'll simulate a successful upload after a delay
-        setTimeout(() => {
-            setUploadStatus({ success: true, message: 'Attendance data uploaded successfully!' });
-            // Reset the file input
-            setUploadFile(null);
-
-            // In a real app, you would refresh the attendance data here
-            // For demo purposes, we'll just keep the existing data
-        }, 1500);
     };
 
     // Render status badge
@@ -234,60 +239,61 @@ const Classroom = ({ onBack }) => {
             </div>
 
             {/* Upload New Attendance */}
-            <div className="mb-8 p-6 bg-white rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                    <Upload className="w-5 h-5 mr-2" />
-                    Upload New Attendance
-                </h2>
-
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-grow">
-                        <input
-                            type="file"
-                            accept=".csv, .xlsx"
-                            onChange={handleFileChange}
-                            className="block w-full text-sm text-gray-500
+            <form onSubmit={submitHandler}>
+                <div className="mb-8 p-6 bg-white rounded-lg shadow">
+                    <h2 className="text-xl font-semibold mb-4 flex items-center">
+                        <Upload className="w-5 h-5 mr-2" />
+                        Upload New Attendance
+                    </h2>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex-grow">
+                            <input
+                                type="file"
+                                accept="video/*"
+                                name="video"
+                                onChange={(e) => setVideo(e.target.files[0])}
+                                className="block w-full text-sm text-gray-500
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded file:border-0
                                 file:text-sm file:font-semibold
                                 file:bg-blue-50 file:text-blue-700
                                 hover:file:bg-blue-100"
-                        />
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center"
+                        >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload
+                        </button>
                     </div>
 
-                    <button
-                        onClick={handleUpload}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center"
-                    >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload
-                    </button>
-                </div>
-
-                {uploadStatus && (
-                    <div className={`mt-4 p-3 rounded ${uploadStatus.success ? 'bg-green-100 text-green-700' :
+                    {uploadStatus && (
+                        <div className={`mt-4 p-3 rounded ${uploadStatus.success ? 'bg-green-100 text-green-700' :
                             uploadStatus.loading ? 'bg-blue-100 text-blue-700' :
                                 'bg-red-100 text-red-700'
-                        }`}>
-                        {uploadStatus.loading ? (
-                            <div className="flex items-center">
-                                <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                                {uploadStatus.message}
-                            </div>
-                        ) : uploadStatus.success ? (
-                            <div className="flex items-center">
-                                <Check className="w-4 h-4 mr-2" />
-                                {uploadStatus.message}
-                            </div>
-                        ) : (
-                            <div className="flex items-center">
-                                <AlertTriangle className="w-4 h-4 mr-2" />
-                                {uploadStatus.message}
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
+                            }`}>
+                            {uploadStatus.loading ? (
+                                <div className="flex items-center">
+                                    <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                                    {uploadStatus.message}
+                                </div>
+                            ) : uploadStatus.success ? (
+                                <div className="flex items-center">
+                                    <Check className="w-4 h-4 mr-2" />
+                                    {uploadStatus.message}
+                                </div>
+                            ) : (
+                                <div className="flex items-center">
+                                    <AlertTriangle className="w-4 h-4 mr-2" />
+                                    {uploadStatus.message}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </form>
 
             {/* Filters */}
             <div className="mb-6 bg-white p-6 rounded-lg shadow">
@@ -412,8 +418,9 @@ const Classroom = ({ onBack }) => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 
 export default Classroom;
+

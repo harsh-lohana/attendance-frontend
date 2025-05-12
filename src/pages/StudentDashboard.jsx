@@ -178,7 +178,7 @@ const StudentDashboard = () => {
                         <div
                           key={index}
                           className="border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 bg-white flex flex-col h-full"
-                          onClick={() => viewClassroomDetails(classroom)}
+                          // onClick={() => viewClassroomDetails(classroom)}
                         >
                           <div className="bg-blue-50 p-4 border-b">
                             <h3 className="font-medium text-lg truncate">{classroom.subject}</h3>
@@ -200,7 +200,7 @@ const StudentDashboard = () => {
                               className="text-indigo-600 text-sm font-medium flex items-center hover:text-indigo-800 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/classroom/${classroom._id}`)
+                                // navigate(`/classroom/${classroom._id}`)
                                 // viewClassroomDetails(classroom);
                               }}
                             >
