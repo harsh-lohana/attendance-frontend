@@ -12,6 +12,8 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState('my-classrooms');
   const [selectedClassroom, setSelectedClassroom] = useState(null);
   const [showClassroomDetails, setShowClassroomDetails] = useState(false);
+  const [attendance, setAttendance] = useState([]);
+
   const navigate = useNavigate();
 
   const getClassrooms = async () => {
@@ -56,7 +58,7 @@ const StudentDashboard = () => {
       toast.error("Something went wrong!");
       setLoading(false);
       console.log(error.message);
-    } 
+    }
   }
 
   useEffect(() => {
@@ -178,7 +180,6 @@ const StudentDashboard = () => {
                         <div
                           key={index}
                           className="border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 bg-white flex flex-col h-full"
-                          // onClick={() => viewClassroomDetails(classroom)}
                         >
                           <div className="bg-blue-50 p-4 border-b">
                             <h3 className="font-medium text-lg truncate">{classroom.subject}</h3>
@@ -188,19 +189,13 @@ const StudentDashboard = () => {
                               <Book size={16} className="mr-2 flex-shrink-0" />
                               <span className="truncate">{classroom.teacher.name}</span>
                             </div>
-                            <div className="flex items-center mb-2 text-sm text-gray-600">
-                              <span className="truncate">{classroom.branch}</span>
-                            </div>
-                            <div className="flex items-center mb-2 text-sm text-gray-600">
-                              <span className="truncate">{classroom.year}</span>
-                            </div>
                           </div>
                           <div className="bg-gray-50 px-4 py-3 border-t flex justify-between items-center">
                             <button
                               className="text-indigo-600 text-sm font-medium flex items-center hover:text-indigo-800 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // navigate(`/classroom/${classroom._id}`)
+                                navigate(`/attendance/${classroom._id}`)
                                 // viewClassroomDetails(classroom);
                               }}
                             >
