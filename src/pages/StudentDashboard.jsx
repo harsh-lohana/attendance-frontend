@@ -52,7 +52,9 @@ const StudentDashboard = () => {
         config
       );
       availableStudentClassrooms = data;
-      const filteredAvailableClassrooms = availableStudentClassrooms.filter(classroom => studentClassrooms.includes(classroom));
+      const filteredAvailableClassrooms = data;
+      // const filteredAvailableClassrooms = availableStudentClassrooms.filter(classroom => studentClassrooms.includes(classroom));
+      console.log(availableStudentClassrooms);
       setAvailableClassrooms(filteredAvailableClassrooms);
     } catch (error) {
       toast.error("Something went wrong!");
